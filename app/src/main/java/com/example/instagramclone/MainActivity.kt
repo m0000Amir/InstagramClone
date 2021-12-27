@@ -2,13 +2,15 @@ package com.example.instagramclone
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.instagramclone.databinding.ActivityMainBinding
 import com.example.instagramclone.databinding.ItemPostBinding
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AuthCallback {
 
     private val vm: MainVewModel by viewModels()
     private val adapter = PostListAdapter(arrayListOf())
@@ -31,10 +33,34 @@ class MainActivity : AppCompatActivity() {
     fun setupUI() {
         binding.postsRV.adapter = adapter
         binding.postsRV.layoutManager = LinearLayoutManager(this)
+        binding.loginButton.setOnClickListener{
+            val dialog = LoginDialog(this)
+            dialog.show(supportFragmentManager, "LoginDialog")
+        }
+        binding.logoutButton.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure?")
+                .setPositiveButton("Yes") {dialog, which -> vm.onLogout()}
+                .setNegativeButton("Cansel") {dialog, which -> dialog.dismiss()}
+                .show()
+        }
 
     }
 
     fun setupObservables() {
         vm.posts.observe(this, Observer { posts -> adapter.updatePosts(posts) })
+        vm.loggedIn.observe(this, {loggedIn ->
+            binding.loginLayout.visibility = if (loggedIn) View.GONE else View.VISIBLE
+            binding.logoutLayout.visibility = if (loggedIn) View.VISIBLE else View.GONE
+            binding.uploadUnavailableMessage.visibility = if (loggedIn) View.GONE else View.VISIBLE
+            binding.uploadLayout.visibility = if (loggedIn) View.VISIBLE else View.GONE
+        })
     }
+
+    override fun onLogin(username: String, password: String) {
+        vm.onLogin(username, password)
+    }
+
+
 }
