@@ -6,9 +6,11 @@
         <entry key="../../../../layout/custom_preview.xml" value="0.21458333333333332" />
         <entry key="app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.215625" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.215625" />
+        <entry key="app/src/main/res/layout/aaa.xml" value="0.29635416666666664" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.26990665016538523" />
         <entry key="app/src/main/res/layout/dialog_login.xml" value="0.19635416666666666" />
         <entry key="app/src/main/res/layout/item_post.xml" value="0.28586321285665167" />
+        <entry key="app/src/main/res/layout/signup_dialog.xml" value="0.2573063843742799" />
       </map>
     </option>
   </component>

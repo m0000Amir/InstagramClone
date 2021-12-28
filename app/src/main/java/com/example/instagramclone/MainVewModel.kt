@@ -2,9 +2,7 @@ package com.example.instagramclone
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.instagramclone.api.InstagramApiService
-import com.example.instagramclone.api.Post
-import com.example.instagramclone.api.UserLoginResponse
+import com.example.instagramclone.api.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -14,6 +12,7 @@ class MainVewModel: ViewModel() {
 
     val posts = MutableLiveData<List<Post>>()
     val loggedIn = MutableLiveData<Boolean>()
+    val message = MutableLiveData<String>()
 
     private var accessToken: String = ""
     private var currentUsername: String? = null
@@ -61,17 +60,52 @@ class MainVewModel: ViewModel() {
                 }
 
                 override fun onFailure(call: Call<UserLoginResponse>, t: Throwable) {
-                    val i = 0
+                    handleError(t)
                 }
 
             })
     }
 
+    fun onSignup(username: String, email: String, password: String) {
+        val signupRequest = UserSignupRequest(username, email, password)
+        InstagramApiService.api
+            .signup(signupRequest)
+            .enqueue(object: Callback<UserSignupResponse> {
+                override fun onResponse(
+                    call: Call<UserSignupResponse>,
+                    response: Response<UserSignupResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        message.value = " User $username created. Loggin in ... "
+                        onLogin(username, password)
+                    } else {
+                        message.value = response.message()
+                    }
+                }
+
+                override fun onFailure(call: Call<UserSignupResponse>, t: Throwable) {
+                    handleError(t)
+                }
+
+            })
+    }
+
+    private fun handleError(t: Throwable) {
+        message.value = t.localizedMessage
+        t.printStackTrace()
+    }
+
+
     fun onLogout() {
+        message.value = "Logged out"
         accessToken = ""
         currentUsername = null
         currentUserId = null
         loggedIn.value = false
 
     }
+}
+
+private fun <T> Call<T>.enqueue(callback: Callback<UserSignupResponse>) {
+
 }
