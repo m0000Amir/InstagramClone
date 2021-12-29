@@ -1,11 +1,8 @@
 package com.example.instagramclone.api
 
+import okhttp3.MultipartBody
 import retrofit2.Call
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Field
-import retrofit2.http.Body
+import retrofit2.http.*
 
 interface InstagramApi {
     @GET("post/all")
@@ -18,4 +15,9 @@ interface InstagramApi {
 
     @POST("user")
     fun signup(@Body user: UserSignupRequest): Call<UserSignupResponse>
+
+    @Multipart
+    @POST("/post/image")
+    fun uploadImage(@Part image: MultipartBody.Part, @Header("Authorization") auth: String
+    ):Call<ImageUploadResponse>
 }

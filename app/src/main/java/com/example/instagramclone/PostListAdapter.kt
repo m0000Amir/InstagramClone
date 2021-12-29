@@ -1,6 +1,7 @@
 package com.example.instagramclone
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -9,10 +10,19 @@ import com.bumptech.glide.Glide
 import com.example.instagramclone.api.InstagramApiService.BASE_URL
 import com.example.instagramclone.api.Post
 import com.example.instagramclone.databinding.ItemPostBinding
+import kotlin.math.log
 
 
 class PostListAdapter(private var posts: List<Post>):
     RecyclerView.Adapter<PostListAdapter.PostViewHolder>() {
+
+    private var loggedIn: Boolean = false
+
+    fun onAuth(loggedIn: Boolean) {
+        this.loggedIn = loggedIn
+        notifyDataSetChanged()
+    }
+
 
     fun updatePosts(newPosts: List<Post>) {
         posts = newPosts
@@ -31,7 +41,7 @@ class PostListAdapter(private var posts: List<Post>):
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(posts[position])
+        holder.bind(posts[position], loggedIn)
     }
 
     override fun getItemCount() = posts.size
@@ -39,7 +49,7 @@ class PostListAdapter(private var posts: List<Post>):
     class PostViewHolder(
         val binding: ItemPostBinding): RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(post: Post) {
+        fun bind(post: Post, loggedIn: Boolean) {
             binding.postUsername.text = post.user.username
             binding.captionUsername.text = post.user.username + ":"
             binding.captionText.text = post.caption
@@ -66,6 +76,9 @@ class PostListAdapter(private var posts: List<Post>):
                 binding.commentLayout.addView(commentView)
 
             }
+
+            binding.deleteButton.visibility = if (loggedIn) View.VISIBLE else View.INVISIBLE
+            binding.newCommentLayout.visibility = if (loggedIn) View.VISIBLE else View.GONE
         }
     }
 

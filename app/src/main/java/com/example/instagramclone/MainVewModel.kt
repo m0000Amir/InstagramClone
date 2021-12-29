@@ -3,9 +3,15 @@ package com.example.instagramclone
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.instagramclone.api.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.InputStream
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class MainVewModel: ViewModel() {
@@ -30,8 +36,16 @@ class MainVewModel: ViewModel() {
             .enqueue(object : Callback<List<Post>> {
                 override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
                     if (response.isSuccessful) {
-                        val list = response.body()
+                        val list = response.body()?.sortedByDescending { post ->
+                            val split = post.timestamp.split(".")
+                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")
+                            val date = LocalDateTime.parse(split[0], formatter)
+                            date
+
+                        }
                         posts.value = list ?: listOf()
+                    } else {
+                        message.value = response.message()
                     }
                 }
 
@@ -88,6 +102,35 @@ class MainVewModel: ViewModel() {
                 }
 
             })
+    }
+
+    fun onPostUpload(inputStream: InputStream, caption: String) {
+        val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(),
+                                             inputStream.readBytes())
+        val part = MultipartBody.Part.createFormData("image", "name.jpg", requestBody)
+        InstagramApiService.api
+            .uploadImage(part, accessToken)
+            .enqueue(object: Callback<ImageUploadResponse> {
+                override fun onResponse(
+                    call: Call<ImageUploadResponse>,
+                    response: Response<ImageUploadResponse>
+                ) {
+                    val imageUrl = response.body()?.filename
+                    if (response.isSuccessful && !imageUrl.isNullOrEmpty()) {
+                        // Call upload
+                        val i = 0
+                    } else {
+                        message.value = "Something went wrong"
+                    }
+
+                }
+
+                override fun onFailure(call: Call<ImageUploadResponse>, t: Throwable) {
+                    TODO("Not yet implemented")
+                }
+
+            })
+
     }
 
     private fun handleError(t: Throwable) {
