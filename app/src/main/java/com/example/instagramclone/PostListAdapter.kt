@@ -13,7 +13,8 @@ import com.example.instagramclone.databinding.ItemPostBinding
 import kotlin.math.log
 
 
-class PostListAdapter(private var posts: List<Post>):
+class PostListAdapter(private var posts: List<Post>,
+                      val postCallback: PostCallback):
     RecyclerView.Adapter<PostListAdapter.PostViewHolder>() {
 
     private var loggedIn: Boolean = false
@@ -37,7 +38,7 @@ class PostListAdapter(private var posts: List<Post>):
             LayoutInflater.from(parent.context),
             parent,
             false)
-        return PostViewHolder(binding)
+        return PostViewHolder(binding, postCallback)
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
@@ -47,7 +48,9 @@ class PostListAdapter(private var posts: List<Post>):
     override fun getItemCount() = posts.size
 
     class PostViewHolder(
-        val binding: ItemPostBinding): RecyclerView.ViewHolder(binding.root) {
+        val binding: ItemPostBinding,
+        val postCallback: PostCallback
+        ): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(post: Post, loggedIn: Boolean) {
             binding.postUsername.text = post.user.username
@@ -78,7 +81,16 @@ class PostListAdapter(private var posts: List<Post>):
             }
 
             binding.deleteButton.visibility = if (loggedIn) View.VISIBLE else View.INVISIBLE
+            binding.deleteButton.setOnClickListener { postCallback.onDeletePost(post.id)}
+
             binding.newCommentLayout.visibility = if (loggedIn) View.VISIBLE else View.GONE
+            binding.commentPost.setOnClickListener {
+                val text = binding.commentText.text.toString()
+                if (!text.isNullOrEmpty()) {
+                    postCallback.onComment(text, post.id)
+                }
+                binding.commentText.setText("")
+            }
         }
     }
 

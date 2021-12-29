@@ -117,8 +117,7 @@ class MainVewModel: ViewModel() {
                 ) {
                     val imageUrl = response.body()?.filename
                     if (response.isSuccessful && !imageUrl.isNullOrEmpty()) {
-                        // Call upload
-                        val i = 0
+                        finishPostUpload(imageUrl, caption)
                     } else {
                         message.value = "Something went wrong"
                     }
@@ -126,11 +125,87 @@ class MainVewModel: ViewModel() {
                 }
 
                 override fun onFailure(call: Call<ImageUploadResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
+                    handleError(t)
                 }
 
             })
 
+    }
+
+    private fun finishPostUpload(imageUrl: String, caption: String) {
+        if (currentUserId == null) {
+            message.value = "Something went wrong"
+            return
+        }
+        val createPost = CreatePost(imageUrl, "relative", caption, currentUserId!!)
+        InstagramApiService.api
+            .createPost(createPost, accessToken)
+            .enqueue(object : Callback<CreatePostResponse> {
+                override fun onResponse(
+                    call: Call<CreatePostResponse>,
+                    response: Response<CreatePostResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        message.value = "Post created successfully"
+                        getAllPosts()
+                    } else {
+                        message.value = "Something went wrong"
+                    }
+                }
+
+                override fun onFailure(call: Call<CreatePostResponse>, t: Throwable) {
+                    handleError(t)
+                }
+
+            })
+    }
+
+    fun onDeletePost(postId: Int) {
+        InstagramApiService.api
+            .deletePost(postId, accessToken)
+            .enqueue(object: Callback<String>{
+                override fun onResponse(call: Call<String>, response: Response<String>) {
+                    if (response.isSuccessful) {
+                        message.value = "Post deleted"
+                        getAllPosts()
+                    } else {
+                        message.value = "Post cannot be deleted"
+                    }
+                }
+
+                override fun onFailure(call: Call<String>, t: Throwable) {
+                    handleError(t)
+                }
+
+            })
+    }
+
+    fun postComment(text: String, postId: Int) {
+        if (currentUsername.isNullOrEmpty()) {
+            message.value = "Something went wrong"
+            return
+        }
+        val createComment = CreateComment(currentUsername!!, text, postId)
+        InstagramApiService.api
+            .createComment(createComment, accessToken)
+            .enqueue(object: Callback<CreateCommentResponse>{
+                override fun onResponse(
+                    call: Call<CreateCommentResponse>,
+                    response: Response<CreateCommentResponse>
+                ) {
+                    if (response.isSuccessful) {
+                        message.value = "Comment created"
+                        getAllPosts()
+                    } else {
+                        message.value = "Cannot create comment"
+                    }
+                }
+
+                override fun onFailure(call: Call<CreateCommentResponse>, t: Throwable) {
+                    handleError(t)
+                }
+
+            })
     }
 
     private fun handleError(t: Throwable) {

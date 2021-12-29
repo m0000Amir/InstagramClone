@@ -20,4 +20,16 @@ interface InstagramApi {
     @POST("/post/image")
     fun uploadImage(@Part image: MultipartBody.Part, @Header("Authorization") auth: String
     ):Call<ImageUploadResponse>
+
+    @POST("/post")
+    fun createPost(@Body post: CreatePost, @Header("Authorization") auth: String
+    ): Call<CreatePostResponse>
+
+    @GET("post/delete/{id}")
+    fun deletePost(@Path("id") id: Int, @Header("Authorization") auth: String
+    ): Call<String>
+
+    @POST("/comment")
+    fun createComment(@Body comment: CreateComment, @Header("Authorization") auth: String
+    ): Call<CreateCommentResponse>
 }

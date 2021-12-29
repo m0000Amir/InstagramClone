@@ -5,6 +5,7 @@ import android.content.Intent
 import android.hardware.input.InputManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
@@ -18,10 +19,10 @@ import java.io.FileNotFoundException
 import java.io.InputStream
 import android.widget.Toast
 
-class MainActivity : AppCompatActivity(), AuthCallback {
+class MainActivity : AppCompatActivity(), AuthCallback, PostCallback {
 
     private val vm: MainVewModel by viewModels()
-    private val adapter = PostListAdapter(arrayListOf())
+    private val adapter = PostListAdapter(arrayListOf(), this)
     private lateinit var binding: ActivityMainBinding
     private  val RESULT_LOAD_IMG = 1
     private  var imageStream: InputStream? = null
@@ -80,6 +81,13 @@ class MainActivity : AppCompatActivity(), AuthCallback {
             closeKeyboard()
         }
 
+        binding.refreshLayout.setOnRefreshListener {
+            adapter.updatePosts(listOf())
+            vm.getAllPosts()
+            Handler().postDelayed({binding.refreshLayout.isRefreshing = false}, 1000)
+
+        }
+
     }
 
     private fun closeKeyboard() {
@@ -127,4 +135,12 @@ class MainActivity : AppCompatActivity(), AuthCallback {
         vm.onSignup(username, email, password)
     }
 
+    override fun onDeletePost(postId: Int) {
+        vm.onDeletePost(postId)
+    }
+
+    override fun onComment(text: String, postId: Int) {
+        vm.postComment(text, postId)
+        closeKeyboard()
+    }
 }
